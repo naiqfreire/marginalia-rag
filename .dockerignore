@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+.superpowers/
+.dotnet/
+.nuget/
+.git/
+docs/
+*.md
+.env
+.env.*
+!.env.example
