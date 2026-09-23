@@ -241,11 +241,13 @@ Each PLAN.md must contain:
 
 ## Implementation Order
 
+Follows `SPEC.md` §5.1 dependency map — do not reorder without updating SPEC.md, README.md, and feature docs together.
+
 1. Content Extraction
-2. Extension Interface
+2. Session Lifecycle
 3. Page Ingestion
-4. Session Lifecycle
-5. Contextual Q&A
-6. Source Citations
-7. Page Summarization
+4. Contextual Q&A
+5. Source Citations
+6. Page Summarization
+7. Extension Interface
 8. Health & Observability

@@ -40,15 +40,17 @@ No copying text to another tab. No losing context. No sending your data to gener
 
 ## Features (In Progress)
 
+Implementation order follows `SPEC.md` §5.1 dependencies (stable feature IDs):
+
 1. Content Extraction — captures main page content
-2. Extension Interface — side panel with chat and summarization
+7. Session Lifecycle — auto-cleanup after TTL
 3. Page Ingestion — chunks, embeds, stores in vector DB
 4. Contextual Q&A — RAG over active page
-5. Source Citations — references to exact text spans
-6. Page Summarization — structured summaries
-7. Session Lifecycle — auto-cleanup after TTL
+6. Source Citations — references to exact text spans
+5. Page Summarization — structured summaries
+2. Extension Interface — side panel with chat and summarization
 8. Health & Observability — logs, metrics, health checks
 
 ## Status
 
-Early development. Implementation order follows the feature list above.
+Early development. Implementation order follows the dependency-safe sequence above (feature IDs unchanged).
