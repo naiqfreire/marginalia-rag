@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Marginalia",
+  "version": "0.0.1",
+  "description": "Understand the current page — questions, summaries, citations.",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["http://localhost:5000/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

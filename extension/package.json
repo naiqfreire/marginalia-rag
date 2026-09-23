@@ -1,0 +1,17 @@
+{
+  "name": "marginalia-extension",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "postbuild": "node scripts/copy-manifest.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vite": "^6.0.0",
+    "@types/chrome": "^0.0.287"
+  }
+}
