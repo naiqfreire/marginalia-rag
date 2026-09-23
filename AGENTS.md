@@ -67,6 +67,7 @@ common/
 - **Performance:** chat < 2s, ingestion < 5s.
 - **Tests:** coverage > 80% on primary slices.
 - **Logs:** every endpoint logs metadata only (ids, sizes, durations, status, error) via Serilog — never content.
+- **Report progress:** after every task or meaningful step, always say what was done (files changed, commands run, results) before moving on.
 
 ## Architecture Rules
 
@@ -193,6 +194,7 @@ dotnet build --no-restore
 - **Branch naming:** `feat/<slice-name>`, `fix/<issue>`, `refactor/<area>`
 - **Branches:** `develop` is the default integration branch (create it from `main` if missing); `main` is the release branch
 - **Commits:** Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`)
+- **Never commit without confirmation:** show what will be committed and ask first; wait for an explicit yes
 - **PRs:** `feat/*` → `develop`, `develop` → `main` (release), require 1 approval, CI must pass
 - **Squash merge** with standardized message
 
@@ -254,3 +256,4 @@ Each PLAN.md must contain:
 - Use paid services.
 - Expose domain entities in HTTP responses.
 - Execute tasks before explicit confirmation like "execute"
+- Commit, push, or merge without explicit confirmation first
