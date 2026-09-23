@@ -66,6 +66,9 @@ coverage/
 packages/
 *.nupkg
 *.snupkg
+.nuget/
+.dotnet/
+.superpowers/
 
 # Node.js
 node_modules/
