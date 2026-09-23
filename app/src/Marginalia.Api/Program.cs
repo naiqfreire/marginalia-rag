@@ -46,6 +46,21 @@ try
                 .GetRequiredService<ILoggerFactory>()
                 .CreateLogger("ExceptionHandler");
 
+            if (exception is BadHttpRequestException badRequest)
+            {
+                logger.LogWarning(
+                    "Bad request for {Method} {Path}: {Reason}",
+                    context.Request.Method,
+                    context.Request.Path.Value,
+                    badRequest.Message);
+
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(
+                    new ErrorResponse("Invalid request body", "INVALID_BODY"));
+                return;
+            }
+
             if (exception is not null)
             {
                 logger.LogError(
