@@ -176,7 +176,7 @@ Never:
 - Do not: PDFs, authentication, multi-user, mobile, monetization.
 - Do not: model fine-tuning.
 - Execute tasks before explicit confirmation like "execute".
-- Commit, push, or merge without explicit confirmation first.
+- Commit, push, or merge — these are the user's responsibility; never run them.
 
 Always:
 
@@ -190,7 +190,7 @@ Always:
 - **Branch naming:** `feat/<slice-name>`, `fix/<issue>`, `refactor/<area>`
 - **Branches:** `develop` is the default integration branch (create it from `main` if missing); `main` is the release branch
 - **Commits:** Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`)
-- **Never commit without confirmation:** show what will be committed and ask first; wait for an explicit yes
+- **Commits are the user's responsibility:** never run `git commit`, `git push`, or merge. Show the diff and propose a Conventional Commit message; the user commits.
 - **PRs:** `feat/*` → `develop`, `develop` → `main` (release), require 1 approval, CI must pass
 - **Squash merge** with standardized message
 - **Required:** PRs cannot be merged without review. Focus: architecture (VSA), security, tests, performance.
