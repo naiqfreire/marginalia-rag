@@ -87,7 +87,7 @@ catch (Exception ex)
 }
 ```
 
-- Descriptive names in English; no obscure abbreviations.
+- Descriptive names; no obscure abbreviations.
 - One file per public class/record.
 - DTOs are immutable `record` types, with validation via Data Annotations or FluentValidation.
 - Requests and Responses live inside the feature folder that uses them.
@@ -102,13 +102,11 @@ return Result.Ok(new AskQuestionResponse(answer, citations));
 return Result.Fail<AskQuestionResponse>(error, code: "SESSION_EXPIRED");
 ```
 
-- Never swallow failures silently; log metadata with context (no content).
-- Logs: every endpoint logs metadata only (ids, sizes, durations, status, error) via Serilog — never content.
 - Prompts live in versioned files, not hardcoded in handlers.
 
 ## Architecture Constraints
 
-Each feature is independent and self-contained in `app/features/<Name>/`. Only extract to `common/` if code is used by **2 or more** features. Each slice has its own Endpoint, Handler, Request, and Response. MediatR dispatches Endpoint → Handler; Endpoint maps HTTP → command/query only.
+Each feature is independent and self-contained in `app/features/<Name>/`. Only extract to `common/` if code is used by **2 or more** features. Each slice has its own Endpoint, Handler, Request, and Response. MediatR dispatches Endpoint → Handler.
 
 Repository structure — existing paths:
 
@@ -159,7 +157,6 @@ Data flow / boundaries between layers:
 - Services registered in `Program.cs` with explicit lifetime (`Scoped`, `Singleton`, `Transient`).
 - `SemanticKernelConfig` and `VectorStoreConfig` are `Singleton`.
 - `DbContext` and services using it are `Scoped`.
-- Duplicate logic between slices → extract to `common/`.
 
 Tests:
 
@@ -172,24 +169,20 @@ Tests:
 
 Never:
 
-- **Never** log access tokens, API keys, prompt content, page content, user questions, or LLM responses. Log metadata only (ids, sizes, durations, status).
-- **Never** persist page data beyond session TTL. Privacy: page data never persists beyond session TTL.
+- **Never** log access tokens, API keys, prompt content, page content, user questions, or LLM responses. Log metadata only (ids, sizes, durations, status, error) via Serilog; never swallow failures silently.
+- **Never** persist page data beyond session TTL; sensitive data is never persisted.
 - **Never** expose stack traces, internal error messages, or file paths in HTTP responses.
-- **Never** commit API keys, connection strings, or secrets — use environment variables. Never commit `.env`.
-- Never expose domain entities in HTTP responses.
+- **Never** commit API keys, connection strings, or secrets — use environment variables.
 - Do not: PDFs, authentication, multi-user, mobile, monetization.
 - Do not: model fine-tuning.
-- Do not: persist sensitive data.
-- Do not: use paid services.
 - Execute tasks before explicit confirmation like "execute".
-- Commit, push, or merge without explicit confirmation first.
+- Commit, push, or merge — these are the user's responsibility; never run them.
 
 Always:
 
 - **Always** validate and sanitize user input before processing.
-- **Always** use HTTPS in production; CORS restricted to extension origin.
-- Error responses follow `{ "error": "...", "code": "..." }` without internal details.
-- Read config via environment / `IConfiguration` only; never hardcode secrets in code.
+- **Always** use HTTPS in production; CORS restricted to configured origins.
+- Error responses follow `{ "error": "...", "code": "..." }`.
 - Code review checklist: input validation, logs without sensitive data, timeouts configured, immutable DTOs.
 
 ## Git Workflow
@@ -197,7 +190,7 @@ Always:
 - **Branch naming:** `feat/<slice-name>`, `fix/<issue>`, `refactor/<area>`
 - **Branches:** `develop` is the default integration branch (create it from `main` if missing); `main` is the release branch
 - **Commits:** Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`)
-- **Never commit without confirmation:** show what will be committed and ask first; wait for an explicit yes
+- **Commits are the user's responsibility:** never run `git commit`, `git push`, or merge. Show the diff and propose a Conventional Commit message; the user commits.
 - **PRs:** `feat/*` → `develop`, `develop` → `main` (release), require 1 approval, CI must pass
 - **Squash merge** with standardized message
 - **Required:** PRs cannot be merged without review. Focus: architecture (VSA), security, tests, performance.
@@ -241,11 +234,23 @@ Each PLAN.md must contain:
 
 ## Implementation Order
 
+Follows `SPEC.md` §5.1 dependency map — do not reorder without updating SPEC.md, README.md, and feature docs together.
+
 1. Content Extraction
-2. Extension Interface
+2. Session Lifecycle
 3. Page Ingestion
-4. Session Lifecycle
-5. Contextual Q&A
-6. Source Citations
-7. Page Summarization
+4. Contextual Q&A
+5. Source Citations
+6. Page Summarization
+7. Extension Interface
 8. Health & Observability
+
+## File Modification Permission Policy
+
+- Never create, edit, delete, move, rename, or overwrite any file without explicit permission from the user.
+- Before any file operation, tell the user which file(s) will change, what will change and why, the expected outcome and scope, and whether multiple files are involved (and why they must change together).
+- Then ask explicitly: "May I proceed with these file changes?" and wait for explicit approval (e.g., "yes", "proceed", "approved"). Silence, implied consent, or unrelated replies are not approval.
+- Multiple files may be changed only when they belong to the same context/feature and the multi-file change is necessary; list and justify every file.
+- If the scope changes or additional files become necessary after approval, stop and ask for permission again.
+- Never make extra file changes beyond what was explicitly approved.
+- Proposing code or file contents in chat is allowed, but writing them to disk requires permission.
