@@ -28,6 +28,28 @@ try
         cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
     builder.Services.AddOpenApi();
 
+    var configuredOrigins = (builder.Configuration["CORS_ALLOWED_ORIGINS"] ?? string.Empty)
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    var rejectedWildcards = configuredOrigins
+        .Where(origin => origin == "*" || origin.EndsWith("://*", StringComparison.Ordinal))
+        .ToArray();
+    var allowedOrigins = configuredOrigins
+        .Except(rejectedWildcards, StringComparer.OrdinalIgnoreCase)
+        .ToArray();
+
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("ExtensionOrigins", policy =>
+        {
+            if (allowedOrigins.Length > 0)
+            {
+                policy.WithOrigins(allowedOrigins)
+                    .WithMethods("POST", "OPTIONS")
+                    .WithHeaders("Content-Type");
+            }
+        });
+    });
+
     builder.Services.Configure<IngestPageLimits>(options =>
     {
         var max = builder.Configuration.GetValue<int?>("MAX_PAGE_WORDS") ?? 10_000;
@@ -95,6 +117,19 @@ try
             httpContext.Items["RequestPath"] = httpContext.Request.Path.Value;
         };
     });
+
+    if (rejectedWildcards.Length > 0)
+    {
+        app.Logger.LogWarning(
+            "Ignored {WildcardCount} wildcard CORS origin entries",
+            rejectedWildcards.Length);
+    }
+
+    app.Logger.LogInformation(
+        "CORS configured with {AllowedOriginCount} exact origins",
+        allowedOrigins.Length);
+
+    app.UseCors("ExtensionOrigins");
 
     if (app.Environment.IsDevelopment())
     {
