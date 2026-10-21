@@ -4,6 +4,12 @@ Atomic tasks. Each ends in independently runnable production code (DoD rule A: w
 
 **Working directory:** repo root unless noted. Backend commands from `app/`.
 
+## Verification Status (2026-10-21)
+
+Automated: `dotnet test` 41/41 pass (including 3 CORS integration tests); `dotnet build --no-restore` and `dotnet format --verify-no-changes` clean; `npm run typecheck` and `npm run build` clean. Curl: allowed preflight `204` with exact `Access-Control-Allow-Origin`; disallowed origin gets no CORS header; `200` / `400` / `422` confirmed; logs contain no page text.
+
+Pending: browser E2E (load unpacked extension → article → `200`). Complete the remaining Task 6 item before merge.
+
 ---
 
 ## Task 1 — Scaffold `extension/` (Vite + TS + MV3)
@@ -13,10 +19,10 @@ Atomic tasks. Each ends in independently runnable production code (DoD rule A: w
 **Done when:** `npm install` + `npm run build` produce `extension/dist`; manifest loads as unpacked MV3 extension in Chrome/Edge (empty content script OK).
 
 **Steps:**
-- [ ] Create Vite + TypeScript project under `extension/` with `npm run build`, `npm run dev` scripts.
-- [ ] Add `manifest.json`: `manifest_version: 3`, `permissions: ["activeTab", "scripting"]`, `background.service_worker`, `content_scripts` on `<all_urls>` (read-only match for extraction).
-- [ ] Add content script + background entry points (stubs logging metadata only).
-- [ ] Verify load unpacked → no manifest errors.
+- [x] Create Vite + TypeScript project under `extension/` with `npm run build`, `npm run dev` scripts.
+- [x] Add `manifest.json`: `manifest_version: 3`, `permissions: ["activeTab", "scripting"]`, `background.service_worker`, `content_scripts` on `<all_urls>` (read-only match for extraction).
+- [x] Add content script + background entry points (stubs logging metadata only).
+- [ ] Verify load unpacked → no manifest errors (pending browser E2E).
 
 ---
 
@@ -27,11 +33,11 @@ Atomic tasks. Each ends in independently runnable production code (DoD rule A: w
 **Done when:** On an article-like page, extracted payload has non-empty `text`, `url`, `title`.
 
 **Steps:**
-- [ ] Implement extraction: prefer `<article>` / `main` / readability-style largest text block; strip `script`, `style`, `nav`, `footer`, `aside`, hidden nodes.
-- [ ] Capture `document.title` and `location.href`.
-- [ ] Enforce `MAX_PAGE_WORDS` client-side fast path (trim or flag for server 422).
-- [ ] Send `chrome.runtime.sendMessage({ type: "content-extracted", payload })`.
-- [ ] Manual check: load a docs/news article; confirm message in service worker console (metadata only — do not log full text).
+- [x] Implement extraction: prefer `<article>` / `main` / readability-style largest text block; strip `script`, `style`, `nav`, `footer`, `aside`, hidden nodes.
+- [x] Capture `document.title` and `location.href`.
+- [x] Enforce `MAX_PAGE_WORDS` client-side fast path (trim or flag for server 422).
+- [x] Send `chrome.runtime.sendMessage({ type: "content-extracted", payload })`.
+- [ ] Manual check: load a docs/news article; confirm message in service worker console (metadata only — do not log full text). Pending browser E2E.
 
 ---
 
@@ -42,10 +48,10 @@ Atomic tasks. Each ends in independently runnable production code (DoD rule A: w
 **Done when:** Worker POSTs to `{API_BASE_URL}/api/ingest` and surfaces 2xx / failure without storing page text.
 
 **Steps:**
-- [ ] Receive content message; build `{ sessionId, url, title, text }` (sessionId: ephemeral UUID per tab/session — full lifecycle is feature 7).
-- [ ] Read `API_BASE_URL` / `VITE_API_BASE_URL` from build-time env.
-- [ ] `fetch` POST JSON with timeout + limited retry/backoff; no body logging.
-- [ ] Report success/failure to console as metadata (status, duration, byte length) only.
+- [x] Receive content message; build `{ sessionId, url, title, text }` (sessionId: ephemeral UUID per tab/session — full lifecycle is feature 7).
+- [x] Read `API_BASE_URL` / `VITE_API_BASE_URL` from build-time env.
+- [x] `fetch` POST JSON with timeout + limited retry/backoff; no body logging.
+- [x] Report success/failure to console as metadata (status, duration, byte length) only.
 
 ---
 
@@ -62,12 +68,12 @@ Atomic tasks. Each ends in independently runnable production code (DoD rule A: w
 **Done when:** Valid body → 200; missing fields → 400 `{error,code}`; over `MAX_PAGE_WORDS` → 422 `{error,code}`; logs metadata only.
 
 **Steps:**
-- [ ] `record IngestPageRequest(string SessionId, string Url, string Title, string Text)` (+ validation attributes or FluentValidation rules).
-- [ ] `record IngestPageResponse(string SessionId, bool Accepted)`.
-- [ ] Handler: validate → word count vs `MAX_PAGE_WORDS` → `Result.Ok` / `Result.Fail` (no domain exceptions for expected failures).
-- [ ] Endpoint: `app.MapPost("/api/ingest", ...)` — HTTP → MediatR only; map status codes (400/422/500) to `{ error, code }`.
-- [ ] Serilog: log sessionId (or hash), text length, duration — never content.
-- [ ] Run from `app/`: `dotnet build --no-restore` and `dotnet run --project src/Marginalia.Api`; curl happy path + 400 + 422.
+- [x] `record IngestPageRequest(string SessionId, string Url, string Title, string Text)` (+ validation attributes or FluentValidation rules).
+- [x] `record IngestPageResponse(string SessionId, bool Accepted)`.
+- [x] Handler: validate → word count vs `MAX_PAGE_WORDS` → `Result.Ok` / `Result.Fail` (no domain exceptions for expected failures).
+- [x] Endpoint: `app.MapPost("/api/ingest", ...)` — HTTP → MediatR only; map status codes (400/422/500) to `{ error, code }`.
+- [x] Serilog: log sessionId (or hash), text length, duration — never content.
+- [x] Run from `app/`: `dotnet build --no-restore` and `dotnet run --project src/Marginalia.Api`; curl happy path + 400 + 422.
 
 ---
 
@@ -78,10 +84,10 @@ Atomic tasks. Each ends in independently runnable production code (DoD rule A: w
 **Done when:** Preflight from allowed origin OK; disallowed origin blocked; no `chrome-extension://*` in policy.
 
 **Steps:**
-- [ ] Read `CORS_ALLOWED_ORIGINS` (comma-separated) via `IConfiguration`.
-- [ ] Add CORS policy: `WithOrigins(...)` exact list; allow required headers/methods for JSON POST.
-- [ ] Apply before endpoint mapping; Development logging of rejected origin metadata only.
-- [ ] Document: copy extension ID from `chrome://extensions` into `.env` → restart API.
+- [x] Read `CORS_ALLOWED_ORIGINS` (comma-separated) via `IConfiguration`.
+- [x] Add CORS policy: `WithOrigins(...)` exact list; allow required headers/methods for JSON POST.
+- [x] Apply before endpoint mapping; Development logging of rejected origin metadata only.
+- [x] Document: copy extension ID from `chrome://extensions` into `.env` → restart API.
 
 ---
 
@@ -90,12 +96,12 @@ Atomic tasks. Each ends in independently runnable production code (DoD rule A: w
 **Done when:** All checks pass; report results (files, commands, outcomes) before any commit.
 
 **Checklist:**
-- [ ] Article page → extension extract → POST → 200.
-- [ ] Missing `title`/`text` → 400 `{error,code}`.
-- [ ] Text over `MAX_PAGE_WORDS` → 422 `{error,code}`.
-- [ ] Request with origin not on allowlist → CORS failure.
-- [ ] API logs: path, status, duration, size only — grep confirms no article body.
-- [ ] `dotnet build --no-restore` clean; extension `npm run build` clean.
+- [ ] Article page → extension extract → POST → 200 (pending browser E2E).
+- [x] Missing `title`/`text` → 400 `{error,code}`.
+- [x] Text over `MAX_PAGE_WORDS` → 422 `{error,code}`.
+- [x] Request with origin not on allowlist → no `Access-Control-Allow-Origin` header.
+- [x] API logs: path, status, duration, size only — grep confirms no article body.
+- [x] `dotnet build --no-restore` clean; extension `npm run build` clean.
 
 ---
 
