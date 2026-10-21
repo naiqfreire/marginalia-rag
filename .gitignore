@@ -100,3 +100,9 @@ extension/.vite/
 *.local
 *.local.*
 local.settings.json
+
+# Extension
+extension/node_modules/
+extension/dist/
+
+docs/superpowers/plans

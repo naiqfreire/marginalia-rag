@@ -91,11 +91,13 @@ Marginalia consists of 8 features, organized in three groups. Each feature has i
 
 ```
 
-Content Extraction (1) ──► Page Ingestion (3) ──► Contextual Q&A (4) ──► Source Citations (6)
-│ │
-│ └──► Page Summarization (5)
+Content Extraction (1) ──┬──► Session Lifecycle (7)
 │
-└──► Session Lifecycle (7)
+└──► Page Ingestion (3) ◄── (session scope from 7)
+│
+├──► Contextual Q&A (4) ──► Source Citations (6)
+│
+└──► Page Summarization (5)
 
 Extension Interface (2) ──► consumes features 4, 5, and 6
 
@@ -105,13 +107,15 @@ Health & Observability (8) ──► cross-cutting across all features
 
 ### 5.2. Implementation Order
 
+Ordered by dependency (do not reorder without updating AGENTS.md, README.md, and feature docs together):
+
 1. Content Extraction (1)
-2. Extension Interface (2)
+2. Session Lifecycle (7)
 3. Page Ingestion (3)
-4. Session Lifecycle (7)
-5. Contextual Q&A (4)
-6. Source Citations (6)
-7. Page Summarization (5)
+4. Contextual Q&A (4)
+5. Source Citations (6)
+6. Page Summarization (5)
+7. Extension Interface (2)
 8. Health & Observability (8)
 
 ---
